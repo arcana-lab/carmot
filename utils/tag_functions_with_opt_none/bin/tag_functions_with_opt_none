@@ -1,0 +1,47 @@
+#!/bin/bash
+
+CURR_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" ;
+
+CAT="tag_functions_with_opt_none"
+pass_cmd="${CAT_PASS_NAME}"
+lib_dir="${CAT_LIB_PATH}"
+
+cmd=""
+options=""
+
+usage="
+Usage: $0 [OPTION] ...
+
+Options:
+  --CAT_LIB_PATH=/path/to/libcat/dir          Set the directory containing libcat.dylib
+  --CAT_PASS=pass-file                        Set the LLVM module name (e.g., ~/H0/build/CAT.dylib)
+
+  Each of above variables can be also set in env. For example,
+  export CAT_PASS=/path/to/clang/dir
+"
+
+if test "$#" == 0 ; then
+  echo "${usage}";
+  exit 1;
+fi
+
+for var in "$@" ; do
+  options="$options $var" ;
+done
+if test "$options" == "" ; then
+  echo "$0: error: no input files: $cmd";
+  exit 1;
+fi
+
+pass_cmd="${CURR_PATH}/../inst/lib/${CAT}.so" ;
+
+NOELLE_PATH="${CURR_PATH}/../../../tools/noelle/install/bin" ;
+
+#cmdMinimum="${CURR_PATH}/prepare_bitcode ${options}" ;
+cmdPass="${NOELLE_PATH}/noelle-load -load ${pass_cmd} -CAT ${options}" ;
+
+#echo ${cmdMinimum} ;
+echo ${cmdPass} ;
+
+#eval ${cmdMinimum} ;
+eval ${cmdPass} ;

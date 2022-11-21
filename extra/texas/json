@@ -1,0 +1,27 @@
+{"States": [
+    {"StartPoint": {
+        "File": "start-stop-tracking-file-name.cpp/hpp",
+        "Line": 10
+        }, 
+    "StopPoint": {
+        "File": "file.cpp/hpp",
+        "Line": 22
+    },
+    "Allocations": [
+        {"VariableName": "var",
+
+         "Origin": [
+         	{"File": "path/to/file.cpp/hpp",
+         	 "Column": 0, 
+         	 "Line": 12
+         	},
+         	...
+         ]
+     	}, 
+        ...
+    ]
+    }
+    ... 
+]
+
+}

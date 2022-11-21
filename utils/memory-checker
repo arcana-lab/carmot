@@ -1,0 +1,28 @@
+#!/bin/bash
+
+(
+minFreeMemoryInKB="5000000" ; # 5 GB
+interval="30" ;
+
+while true ; do
+  # Every 30 seconds
+  sleep ${interval} ;
+
+  # Check first if current process is still alive
+  kill -0 $$ || exit 0 ;
+
+  # Get available memory
+  freeMemory=`cat /proc/meminfo | grep "MemFree:" | awk '{print $2}'` ;
+
+  # If no memory left, kill it!
+  if [ "${freeMemory}" -lt "${minFreeMemoryInKB}" ]; then
+    # Be nice, post SIGTERM first.
+    # The 'exit 0' below will be executed if any preceeding command fails.
+    kill -s SIGTERM $$ && kill -0 $$ || exit 0 ;
+    sleep ${interval} ;
+    kill -s SIGKILL $$ ;
+  fi
+done
+) 2> /dev/null &
+
+exec "$@" ;

@@ -1,0 +1,121 @@
+==3117849== Memcheck, a memory error detector
+==3117849== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==3117849== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==3117849== Command: ./test
+==3117849== 
+==3117849== Warning: set address range perms: large range [0x59e8f040, 0xa59e8f040) (undefined)
+carat_user: Temporal Tracking: 0
+carat_user: ProcessShadowBatches thread is alive!
+carat_user: Recieved new batch... sending it to be cleaned
+carat_user: Recieved kill command... wrapping things up now
+carat_user: Cleaning batch: 0
+carat_user: DONE cleaning batch: 0, numRedundancies: 0
+carat_user: Recieved cleaned batch... sending it into cleanedShadowBatches
+carat_user: Processing cleaned batch 0
+carat_user: Num Entries:5
+carat_user: shadowRun called for tid 0, batch 0
+carat_user: Tid 0 bounds: Index 0 - 0
+carat_user: shadowRun called for tid 3, batch 0
+carat_user: shadowRun called for tid 1, batch 0
+carat_user: Tid 1 bounds: Index 1 - 1
+carat_user: Tid 3 bounds: Index 3 - 4
+carat_user: shadowRun DONE for tid 3, batch 0
+carat_user: shadowRun called for tid 2, batch 0
+carat_user: Tid 2 bounds: Index 2 - 2
+carat_user: TID 2 has met the exit conditions.
+carat_user: TID 2 is merging the allocation table of TID 3
+carat_user: shadowRun DONE for tid 2, batch 0
+carat_user: TID 1 has met the exit conditions.
+carat_user: TID 1 is merging the allocation table of TID 2
+carat_user: shadowRun DONE for tid 1, batch 0
+carat_user: TID 0 has met the exit conditions.
+carat_user: TID 0 is merging the allocation table of TID 1
+carat_user: shadowRun DONE for tid 0, batch 0
+carat_user: Finished processing batch 0, now joining threads back
+carat_user: Finished joining threads back
+carat_user: Done running,, can finally die...
+carat_user: Done joining batch processor thread, Now searching for cycles...
+carat_user: Adding all remaining allocations in allocationMap to connection graph
+carat_user: Adding 0x1ffefff0d0 to graph
+carat_user: Adding 0xffffffffffffffff to graph
+carat_user: NO CYCLES FOUND!
+42
+42
+42
+42
+42
+42
+42
+42
+42
+==3117849== 
+==3117849== HEAP SUMMARY:
+==3117849==     in use at exit: 42,949,687,504 bytes in 99 blocks
+==3117849==   total heap usage: 168 allocs, 69 frees, 42,949,787,166 bytes allocated
+==3117849== 
+==3117849== 8 bytes in 1 blocks are definitely lost in loss record 11 of 99
+==3117849==    at 0x4C31556: operator new(unsigned long) (vg_replace_malloc.c:344)
+==3117849==    by 0x413BED: processShadowBatches() (texas.cpp:316)
+==3117849==    by 0x4F00B72: ??? (in /usr/lib64/libstdc++.so.6.0.25)
+==3117849==    by 0x591F2DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==3117849==    by 0x52CEE82: clone (in /usr/lib64/libc-2.28.so)
+==3117849== 
+==3117849== 32 bytes in 1 blocks are definitely lost in loss record 28 of 99
+==3117849==    at 0x4C31556: operator new(unsigned long) (vg_replace_malloc.c:344)
+==3117849==    by 0x40E2DB: incrementPushReturn(Trace*, unsigned long, unsigned long) (wrapper.cpp:88)
+==3117849==    by 0x40F4D7: texasAddToStateWithInfoWrapper(unsigned long, void*, void*) (wrapper.cpp:258)
+==3117849==    by 0x40D917: MEMORYTOOL__Z1fPii (test.cpp:10)
+==3117849==    by 0x40D992: main (test.cpp:23)
+==3117849== 
+==3117849== 57 (56 direct, 1 indirect) bytes in 1 blocks are definitely lost in loss record 57 of 99
+==3117849==    at 0x4C31556: operator new(unsigned long) (vg_replace_malloc.c:344)
+==3117849==    by 0x4168C8: AllocationTable::AllocationTable() (AllocationTable.cpp:9)
+==3117849==    by 0x412F85: texas_init() (texas.cpp:383)
+==3117849==    by 0x40D84B: texasStartup (texas.cpp:374)
+==3117849==    by 0x40D84B: __cxx_global_var_init.22 (texas.cpp:376)
+==3117849==    by 0x40D84B: _GLOBAL__sub_I_texas.cpp (texas.cpp:0)
+==3117849==    by 0x40DB0C: __libc_csu_init (in /project/marc/enrico/repos/memorytool_development/tests/regression/loop_with_induction_variable_store/test)
+==3117849==    by 0x51F662D: (below main) (in /usr/lib64/libc-2.28.so)
+==3117849== 
+==3117849== 304 bytes in 1 blocks are possibly lost in loss record 78 of 99
+==3117849==    at 0x4C331EA: calloc (vg_replace_malloc.c:762)
+==3117849==    by 0x4012341: allocate_dtv (in /usr/lib64/ld-2.28.so)
+==3117849==    by 0x4012CD1: _dl_allocate_tls (in /usr/lib64/ld-2.28.so)
+==3117849==    by 0x591FF32: pthread_create@@GLIBC_2.2.5 (in /usr/lib64/libpthread-2.28.so)
+==3117849==    by 0x4F00E58: std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)()) (in /usr/lib64/libstdc++.so.6.0.25)
+==3117849==    by 0x413C3C: thread<void (&)(shadowBatch *), shadowBatch *&, void> (thread:131)
+==3117849==    by 0x413C3C: processShadowBatches() (texas.cpp:316)
+==3117849==    by 0x4F00B72: ??? (in /usr/lib64/libstdc++.so.6.0.25)
+==3117849==    by 0x591F2DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==3117849==    by 0x52CEE82: clone (in /usr/lib64/libc-2.28.so)
+==3117849== 
+==3117849== 848 (32 direct, 816 indirect) bytes in 1 blocks are definitely lost in loss record 95 of 99
+==3117849==    at 0x4C31556: operator new(unsigned long) (vg_replace_malloc.c:344)
+==3117849==    by 0x40E2DB: incrementPushReturn(Trace*, unsigned long, unsigned long) (wrapper.cpp:88)
+==3117849==    by 0x40F3EB: caratStateAllocWrapper(unsigned long, void*, unsigned long, void*) (wrapper.cpp:192)
+==3117849==    by 0x40D963: main (test.cpp:0)
+==3117849== 
+==3117849== 848 (32 direct, 816 indirect) bytes in 1 blocks are definitely lost in loss record 96 of 99
+==3117849==    at 0x4C31556: operator new(unsigned long) (vg_replace_malloc.c:344)
+==3117849==    by 0x40E2DB: incrementPushReturn(Trace*, unsigned long, unsigned long) (wrapper.cpp:88)
+==3117849==    by 0x40D8F7: MEMORYTOOL__Z1fPii (test.cpp:11)
+==3117849==    by 0x40D992: main (test.cpp:23)
+==3117849== 
+==3117849== 4,187 (32 direct, 4,155 indirect) bytes in 1 blocks are definitely lost in loss record 98 of 99
+==3117849==    at 0x4C331EA: calloc (vg_replace_malloc.c:762)
+==3117849==    by 0x413463: processShadowBatches() (texas.cpp:273)
+==3117849==    by 0x4F00B72: ??? (in /usr/lib64/libstdc++.so.6.0.25)
+==3117849==    by 0x591F2DD: start_thread (in /usr/lib64/libpthread-2.28.so)
+==3117849==    by 0x52CEE82: clone (in /usr/lib64/libc-2.28.so)
+==3117849== 
+==3117849== LEAK SUMMARY:
+==3117849==    definitely lost: 192 bytes in 6 blocks
+==3117849==    indirectly lost: 5,788 bytes in 56 blocks
+==3117849==      possibly lost: 304 bytes in 1 blocks
+==3117849==    still reachable: 42,949,681,220 bytes in 36 blocks
+==3117849==         suppressed: 0 bytes in 0 blocks
+==3117849== Reachable blocks (those to which a pointer was found) are not shown.
+==3117849== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==3117849== 
+==3117849== For lists of detected and suppressed errors, rerun with: -s
+==3117849== ERROR SUMMARY: 7 errors from 7 contexts (suppressed: 0 from 0)

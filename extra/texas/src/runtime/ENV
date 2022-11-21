@@ -1,0 +1,3 @@
+export CARMOT_THREADS=4
+export CARMOT_WINDOW_SIZE=1048576
+PATH=$PATH:$(pwd)/virgil/include

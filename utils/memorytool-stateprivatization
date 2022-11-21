@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Check the args
+numOfInputs=1 ;
+if test $# -lt ${numOfInputs} ; then
+  echo "USAGE: $ `basename $0` target_program_single_bitcode.bc" ;
+  exit 1 ;
+fi
+
+# Get repo dir:
+REPO_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/.." ;
+
+# Get args
+singleBC="${1}" ;
+
+# Call memorytool with the right options
+#toDisable="-disable-state-in-bytes -disable-state-sets-tracking -disable-callstack -disable-state-uses" ;
+toDisable="-disable-state-in-bytes -disable-state-input -disable-state-output -disable-state-transfer -disable-state-uses -enable-DFA-obj-granularity" ;
+${REPO_PATH}/utils/memorytool ${1} ${toDisable} ;

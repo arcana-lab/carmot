@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Make sure TEXAS is enabled
+unset MEMORYTOOL_DISABLE_TEXAS ;
+
+# Check the args
+numOfInputs=1 ;
+if test $# -lt ${numOfInputs} ; then
+  echo "USAGE: $ `basename $0` ./binary args ..." ;
+  exit 1 ;
+fi
+
+# Get repo dir:
+REPO_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/.." ;
+
+#${REPO_PATH}/utils/memory-checker pin -t ${REPO_PATH}/utils/MemTrace/obj-intel64/memtrace.so -- $@ ;
+#${REPO_PATH}/utils/memory-checker $@ ;
+eval $@ ;
+
+exit $? ;

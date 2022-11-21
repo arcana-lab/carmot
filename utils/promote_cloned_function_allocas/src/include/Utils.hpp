@@ -1,0 +1,8 @@
+#pragma once
+
+#ifndef PROMOTE_ALLOCA_UTILS
+#define PROMOTE_ALLOCA_UTILS
+
+#define NUM_PROMOTED_ALLOCAS "NUM_PROMOTED_ALLOCAS"
+
+#endif

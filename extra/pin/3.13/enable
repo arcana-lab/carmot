@@ -1,0 +1,8 @@
+#!/bin/bash
+ 
+THIS_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" ;
+
+PIN_HOME=${THIS_PATH} ;
+export PATH=${PIN_HOME}/release/bin:${PIN_HOME}/download:${PATH} ;
+export LD_LIBRARY_PATH=${PIN_HOME}/release/lib:${PIN_HOME}/download/extras/xed-intel64/lib:${PIN_HOME}/download/intel64/runtime/pincrt:${PIN_HOME}/download/intel64/lib:${PIN_HOME}/download/intel64/lib-ext:${LD_LIBRARY_PATH} ;
+

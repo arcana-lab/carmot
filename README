@@ -1,0 +1,27 @@
+To setup the repo (it only needs to be executed once), execute:
+$ source ./setup.sh
+
+To setup the repo environment (it needs to be executed for every bash session), execute:
+$ source ./setup_env.sh
+
+To compile the LLVM pass, execute:
+$ ./compile.sh
+
+To compile the runtime, execute:
+$ cd ./include ; make
+
+To run all tests:
+$ cd ./tests ; make
+
+To run a single test:
+$ cd ./tests ; make test TEST=DIR_NAME_OF_TEST
+
+To clean the repo environment, execute:
+$ source clean.sh
+
+TEMPORARY INSTRUCTIONS:
+To checkout current working version of TEXAS, execute:
+$ cd tools/texas ; git checkout de85136
+
+To compile CARMOT runtime and llvm pass, execute:
+$ ./globalCompile.sh

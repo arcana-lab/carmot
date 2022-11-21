@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/bts0842/carat2/src/protection/build/src",
+  "command": "/usr/bin/c++  -DGTEST_HAS_RTTI=0 -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/project/extra/llvm/9.0.0/release/include -I/home/bts0842/carat2/src/noelle/install/include   -fPIC -fvisibility-inlines-hidden -Werror=date-time -std=c++11 -w -ffunction-sections -fdata-sections -fPIC   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS  -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-rtti  -std=c++14 -fPIC -o CMakeFiles/protection.dir/Profiler.cpp.o -c /home/bts0842/carat2/src/protection/src/Profiler.cpp",
+  "file": "/home/bts0842/carat2/src/protection/src/Profiler.cpp"
+}
+]

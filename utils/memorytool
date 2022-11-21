@@ -1,0 +1,219 @@
+#!/bin/bash -e
+
+# Check the args
+numOfInputs=1 ;
+if test $# -lt ${numOfInputs} ; then
+  echo "USAGE: $ `basename $0` target_program_single_bitcode.bc OPTIONS" ;
+  exit 1 ;
+fi
+
+# Get args
+singleBC="${1}" ;
+options="${@:2}" ;
+
+# USE an EVN variable, when set, the wrapper doesn't do anything
+# Disable TEXAS, we only care about number of instrumentation function calls
+export MEMORYTOOL_DISABLE_TEXAS="true" ;
+
+singleBCName="`basename ${1} .bc`" ;
+
+# Get repo dir:
+REPO_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/.." ;
+
+# Get LIBS
+# Note: PROGRAM_LIBS is defined externally
+LIBS="-lstdc++ -lc -lm -lpthread -L${REPO_PATH}/include -lruntime -L${REPO_PATH}/include/runtime/oneTBB/build/linux_intel64_gcc_cc8.3.1_libc2.28_kernel4.18.0_release -ltbb -lboost_serialization -lboost_system ${PROGRAM_LIBS}" ;
+
+cmd="noelle-norm-nomem2reg ${singleBC} -o ${singleBC}";
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+# Execute tag functions with opt none llvm pass
+afterTagFunctions="afterTagFunctions" ;
+cmd="${REPO_PATH}/utils/tag_functions_with_opt_none/bin/tag_functions_with_opt_none ${singleBC} -o ${afterTagFunctions}.bc" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${afterTagFunctions}.bc ;
+
+# Optimize bitcode with -O3
+opt_flags="-O3" ;
+#opt_flags="-O0" ;
+afterOptO3="afterOptO3" ;
+cmd="opt ${opt_flags} --disable-loop-unrolling ${afterTagFunctions}.bc -o ${afterOptO3}.bc" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${afterOptO3}.bc ;
+
+# Remove optnone attribute from all functions
+afterRmOptNone="afterRmOptNone" ;
+cmd="${REPO_PATH}/utils/remove_optnone/bin/remove_optnone -emit-llvm -c ${afterOptO3}.bc -o ${afterRmOptNone}.bc" ;
+#cp ${afterOptO3}.bc ${afterRmOptNone}.bc ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${afterRmOptNone}.bc ;
+
+# Run noelle-norm
+#afterNoelleNorm="afterNoelleNorm" ;
+#cmd="noelle-norm ${afterRmOptNone}.bc -o ${afterNoelleNorm}.bc" ;
+#echo "MEMORYTOOL: ${cmd}" ;
+#eval ${cmd} ;
+#llvm-dis ${afterNoelleNorm}.bc ;
+
+# Transform loops as do-while
+#afterLoopRotate="afterLoopRotate" ;
+#cmd="opt -loop-rotate ${afterRmOptNone}.bc -o ${afterLoopRotate}.bc" ;
+#echo "MEMORYTOOL: ${cmd}" ;
+#eval ${cmd} ;
+#llvm-dis ${afterLoopRotate}.bc ;
+
+# Break critical edges
+#afterBreakCritEdge="afterBreakCritEdges" ;
+#cmd="opt -break-crit-edges ${afterLoopRotate}.bc -o ${afterBreakCritEdge}.bc" ;
+#echo "MEMORYTOOL: ${cmd}" ;
+#eval ${cmd} ;
+#llvm-dis ${afterBreakCritEdge}.bc ;
+
+# Add profiler
+#afterNoelleProfCoverage="afterNoelleProfCoverage" ;
+#binaryWithProfile="binaryWithProfile" ;
+#rm -f ${binaryWithProfile} ;
+#cmd="noelle-prof-coverage ${afterBreakCritEdge}.bc ${binaryWithProfile} ${LIBS}" ;
+#echo "MEMORYTOOL: ${cmd}" ;
+#eval ${cmd} ;
+#cp ${afterBreakCritEdge}.bc ${afterNoelleProfCoverage}.bc ;
+#llvm-dis ${afterNoelleProfCoverage}.bc ;
+
+# Check inputs file exists
+#trainInputs="memorytool_train_inputs.txt" ;
+#if ! test -e ${trainInputs} ; then
+#  echo "ERROR: ${trainInputs} does not exist." ;
+#  exit 1 ;
+#fi
+
+# Run binary for profiling. Generates default.profraw
+#cmd="./${binaryWithProfile} `cat ${trainInputs}`" ;
+#echo "MEMORYTOOL: ${cmd}" ;
+#eval ${cmd} ;
+
+# Embed profile data
+#defaultProfraw="default.profraw" ;
+#afterNoelleMetaProfEmbed="afterNoelleMetaProfEmbed" ;
+#cmd="noelle-meta-prof-embed ${defaultProfraw} ${afterNoelleProfCoverage}.bc -o ${afterNoelleMetaProfEmbed}.bc" ;
+#echo "MEMORYTOOL: ${cmd}" ;
+#eval ${cmd} ;
+#llvm-dis ${afterNoelleMetaProfEmbed}.bc
+
+cmd="noelle-norm-nomem2reg ${afterRmOptNone}.bc -o ${afterRmOptNone}2.bc";
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+# Create a clone of all functions (necessary for DirectState optimization, which tries to promote alloca to induction variables)
+afterCloneFunctionROI="afterCloneFunctionROI";
+#cp ${afterNoelleMetaProfEmbed}.bc ${afterCloneFunctionROI}.bc ;
+#cp ${afterBreakCritEdge}.bc ${afterCloneFunctionROI}.bc ;
+cmd="${REPO_PATH}/utils/clone_function_roi/bin/clone_function_roi -emit-llvm -c ${afterRmOptNone}2.bc -o ${afterCloneFunctionROI}.bc " ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${afterCloneFunctionROI}.bc
+
+cmd="noelle-norm-nomem2reg ${afterCloneFunctionROI}.bc -o ${afterCloneFunctionROI}2.bc";
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+# Promote allocas (necessary for DirectState optimization, which tries to promote alloca to induction variables)
+afterPromoteClonedAllocasROI="afterPromoteClonedAllocasROI";
+cmd="${REPO_PATH}/utils/promote_cloned_function_allocas/bin/promote_cloned_function_allocas ${afterCloneFunctionROI}2.bc -o ${afterPromoteClonedAllocasROI}.bc " ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${afterPromoteClonedAllocasROI}.bc
+
+cmd="noelle-norm-nomem2reg ${afterPromoteClonedAllocasROI}.bc -o ${afterPromoteClonedAllocasROI}2.bc";
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+# Check if promoted allocas are induction variables (necessary for DirectState optimization, which tries to promote alloca to induction variables)
+afterCheckForIndVar="afterCheckForIndVarROI";
+cmd="${REPO_PATH}/utils/check_for_induction_variables/bin/check_for_induction_variables ${afterPromoteClonedAllocasROI}2.bc -o ${afterCheckForIndVar}.bc " ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${afterCheckForIndVar}.bc
+
+cmd="noelle-norm-nomem2reg ${afterCheckForIndVar}.bc -o ${afterCheckForIndVar}2.bc";
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+# Promote allocas in the real ROIs (not in cloned functions)
+afterPromoteAllocasROI="afterPromoteAllocasROI";
+cmd="${REPO_PATH}/utils/promote_cloned_function_allocas/bin/promote_cloned_function_allocas ${afterCheckForIndVar}2.bc -o ${afterPromoteAllocasROI}.bc " ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${afterPromoteAllocasROI}.bc
+
+cmd="noelle-norm-nomem2reg ${afterPromoteAllocasROI}.bc -o ${afterPromoteAllocasROI}2.bc";
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${afterPromoteAllocasROI}2.bc ;
+# Call memorytool llvm pass
+afterMemoryToolPass="afterMemoryToolPass" ;
+cmd="${REPO_PATH}/bin/memorytool_pass ${options} ${afterPromoteAllocasROI}2.bc -o ${afterMemoryToolPass}.bc" ;
+#cmd="${REPO_PATH}/bin/memorytool_pass ${options} ${afterPromoteAllocasROI}.bc -o ${afterMemoryToolPass}.bc" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${afterMemoryToolPass}.bc ;
+
+# Compile instrumented bitcode to object file
+CXXFLAGS="${opt_flags} -g -pthreads -std=c++17 -rdynamic -mcmodel=large -fno-omit-frame-pointer" ;
+cmd="clang++ ${CXXFLAGS} -c ${afterMemoryToolPass}.bc -o ${afterMemoryToolPass}.o" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+
+# Change target program defined symbols, adding prefix
+cmd="${REPO_PATH}/utils/objcopy.sh MEMORYTOOL_ ${afterMemoryToolPass}.o" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+
+# Compile target program into binary linking with runtime
+cmd="clang++ ${CXXFLAGS} ${afterMemoryToolPass}.o -o ${singleBCName} ${LIBS}" ;
+echo "Generating binary:" ;
+echo "${cmd}" ;
+eval ${cmd} ;
+
+
+
+# TO REMOVE
+unset MEMORYTOOL_DISABLE_TEXAS ;
+exit $? ;
+
+
+
+# NOT USEFUL FOR REGULAR USERS
+
+# Clean previous profile metadata: noelle-meta-clean INPUTBC OUTPUTBC . OUTPUTBC is the clean BC
+cleanBC="cleanBC" ;
+cmd="noelle-meta-clean ${afterMemoryToolPass}.bc ${cleanBC}.bc" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${cleanBC}.bc ;
+
+# Add profiler
+binaryWithProfile2="binaryWithProfile2" ;
+rm -f ${binaryWithProfile2} ;
+cmd="noelle-prof-coverage ${cleanBC}.bc ${binaryWithProfile2} ${LIBS}" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+
+# Run binary for profiling. Generates default.profraw
+cmd="./${binaryWithProfile2} `cat ${trainInputs}`" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+
+# Embed profile data
+bitcodeWithProfile2="bitcodeWithProfile2" ;
+cmd="noelle-meta-prof-embed ${defaultProfraw} ${cleanBC}.bc -o ${bitcodeWithProfile2}.bc" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+
+# Use noelle profiler to get some statistics (e.g., ranking stores)
+cmd="${REPO_PATH}/utils/noelle_profiler/bin/noelle_profiler ${bitcodeWithProfile2}.bc -disable-output" ;
+echo "MEMORYTOOL: ${cmd}" ;
+eval ${cmd} ;
+llvm-dis ${bitcodeWithProfile2}.bc ;
+
+# Re-enable TEXAS
+unset MEMORYTOOL_DISABLE_TEXAS ;
+
