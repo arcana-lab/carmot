@@ -44,6 +44,10 @@ struct CAT : public ModulePass {
   bool runOnModule(Module &M) override {
     errs() << "PROMOTE_CLONED_FUNCTION_ALLOCAS\n";
 
+#ifdef MEMORYTOOL_DISABLE_PROMOTE
+    return false;
+#endif
+
     bool modified = false;
 
     // Fetch Noelle
