@@ -4,16 +4,16 @@
 REPO_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )" ;
 
 cd ${REPO_PATH}/include ;
-./compile.sh ;
+./compile.sh
 
 cd ${REPO_PATH} ;
-./compile_disable_directstate.sh
+./compile_disable_dfa_onlyread_directstate.sh ;
 
 cd ${REPO_PATH}/utils/remove_optnone ;
 ./compile.sh ;
 
 cd ${REPO_PATH}/utils/tag_functions_with_opt_none ;
-./compile.sh ;
+./compile_disable_O3.sh ;
 
 #cd ${REPO_PATH}/utils/noelle_profiler ;
 #./compile.sh ;

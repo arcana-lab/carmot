@@ -47,6 +47,10 @@ struct CAT : public ModulePass {
   bool runOnModule(Module &M) override {
     errs() << "CHECK_FOR_INDUCTION_VARIABLES\n";
 
+#ifdef MEMORYTOOL_DISABLE_CHECKFORIV
+    return false;
+#endif
+
     bool modified = false;
 
     // Fetch Noelle

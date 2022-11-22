@@ -14,6 +14,11 @@ add_definitions(
 -D__STDC_CONSTANT_MACROS
 )
 
+option(MEMORYTOOL_DISABLE_CHECKFORIV "Disable check for induction variables" OFF)
+if (MEMORYTOOL_DISABLE_CHECKFORIV)
+  add_definitions(-DMEMORYTOOL_DISABLE_CHECKFORIV)
+endif()
+
 set(REPO_PATH $ENV{REPO_PATH})
 
 SET(CMAKE_CXX_FLAGS "-I${REPO_PATH}/src/include -I${REPO_PATH}/inst/include")

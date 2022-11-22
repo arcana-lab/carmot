@@ -24,12 +24,12 @@ REPO_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/.."
 # Note: PROGRAM_LIBS is defined externally
 LIBS="-lstdc++ -lc -lm -lpthread -L${REPO_PATH}/include -lruntime -L${REPO_PATH}/include/runtime/oneTBB/build/linux_intel64_gcc_cc8.3.1_libc2.28_kernel4.18.0_release -ltbb -lboost_serialization -lboost_system ${PROGRAM_LIBS}" ;
 
-cmd="noelle-norm-nomem2reg ${singleBC} -o ${singleBC}";
+cmd="noelle-norm-nomem2reg ${singleBCName}.bc -o ${singleBCName}2.bc";
 echo "MEMORYTOOL: ${cmd}" ;
 eval ${cmd} ;
 # Execute tag functions with opt none llvm pass
 afterTagFunctions="afterTagFunctions" ;
-cmd="${REPO_PATH}/utils/tag_functions_with_opt_none/bin/tag_functions_with_opt_none ${singleBC} -o ${afterTagFunctions}.bc" ;
+cmd="${REPO_PATH}/utils/tag_functions_with_opt_none/bin/tag_functions_with_opt_none ${singleBCName}2.bc -o ${afterTagFunctions}.bc" ;
 echo "MEMORYTOOL: ${cmd}" ;
 eval ${cmd} ;
 llvm-dis ${afterTagFunctions}.bc ;

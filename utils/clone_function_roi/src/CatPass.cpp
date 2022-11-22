@@ -46,6 +46,10 @@ struct CAT : public ModulePass {
   bool runOnModule(Module &M) override {
     errs() << "CLONE_FUNCTION_ROI\n";
 
+#ifdef MEMORYTOOL_DIABLE_CLONE
+    return false;
+#endif
+
     bool modified = false;
 
     modified |= tagROIsWithIDs(M, MEMORYTOOL_START_TRACKING);
