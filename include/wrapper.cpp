@@ -1176,6 +1176,9 @@ void FindCycleInAllocationMapWrapper(void){
     continue;
   }
 
+  syncValue = 0;
+  return;
+
   std::cerr << "SYNC VALUE = " << syncValue << "\n";
 
   // Now I have updated allocation map, save the cycles
