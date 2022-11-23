@@ -28,7 +28,7 @@ export PATH=${PATH}:${REPO_PATH}/utils/prettyPrint ;
 export PATH=${PATH}:${REPO_PATH}/tools/noelle/install/bin ;
 
 # Add pin
-source ./extra/pin/3.13/enable ;
+source ${REPO_PATH}/extra/pin/3.13/enable ;
 export PIN_ROOT="${REPO_PATH}/extra/pin/3.13/download" ;
 
 # Go back to repo root
