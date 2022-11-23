@@ -91,20 +91,15 @@ struct CAT : public ModulePass {
   bool runOnModule(Module &M) override {
     bool modified = false;
 
-    // Fetch noelle
-    errs() << "ED before noelle\n";
-    auto &noelle = getAnalysis<Noelle>();
-    errs() << "ED after noelle\n";
-
     std::unordered_set<Function*> functionsToTag;
 #ifndef MEMORYTOOL_DISABLE_LOCALS_OPT
-    errs() << "ED before fundFunctions\n";
+    // Fetch noelle
+    auto &noelle = getAnalysis<Noelle>();
     functionsToTag = findFunctionsToInstrument(M, noelle);
 #else
     functionsToTag = getAllFunctions(M);
 #endif
 
-    errs() << "ED before tagFunctions\n";
     modified |= tagFunctionsOptNone(M, functionsToTag);
 
     errs() << "TAG_FUNCTIONS_WITH_OPT_NONE\n";
@@ -119,7 +114,9 @@ struct CAT : public ModulePass {
   // The LLVM IR of functions isn't ready at this point
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     //AU.setPreservesAll();
+#ifndef MEMORYTOOL_DISABLE_LOCALS_OPT
     AU.addRequired<Noelle>();
+#endif
 
     return;
   }

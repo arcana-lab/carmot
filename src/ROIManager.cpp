@@ -33,11 +33,32 @@ std::vector<ROI*> ROIManager::visitROIs(std::map<Function*, std::set<CallBase*>>
     // Iterate over calls to start tracking for the current function of interest
     std::set<CallBase*> &callInsts = elem.second;
     for (auto callToStart : callInsts){
+      std::vector<CallBase*> callsToStop;
+
       // Get staticID
       bool oneUser = callToStart->hasOneUse();
       if (!oneUser){
-        errs() << "ERROR: call to start tracking (i.e., stateID) has more than 1 use. It has " << callToStart->getNumUses() << " uses. Cannot find ROI. Abort.\n";
-        abort();
+        for (Value *userOfStateID : callToStart->users()){
+          CallBase *callInst = dyn_cast<CallBase>(userOfStateID);
+          if (callInst != nullptr){
+            if (callInst->getCalledFunction() == this->stopFunc){
+              callsToStop.push_back(callInst);
+            }
+          }
+        }
+
+        if (callsToStop.size() == 0){
+          errs() << "ERROR: callsToStop.size() == 0. Cannot find ROI. Abort.\n";
+          abort();
+        }
+
+        ROI *roi = new ROI(callToStart, callsToStop);
+        rois.push_back(roi);
+
+        continue;
+
+        //errs() << "ERROR: call to start tracking (i.e., stateID) has more than 1 use. It has " << callToStart->getNumUses() << " uses. Cannot find ROI. Abort.\n";
+        //abort();
       }
 
       User *user = callToStart->user_back();
@@ -48,7 +69,6 @@ std::vector<ROI*> ROIManager::visitROIs(std::map<Function*, std::set<CallBase*>>
       }
 
       Value *allocaOfStateID = storeInst->getPointerOperand();
-      std::vector<CallBase*> callsToStop;
       for (Value *userOfStateID : allocaOfStateID->users()){
         // If user of stateID is not a load instruction, then keep going
         LoadInst *loadInst = dyn_cast<LoadInst>(userOfStateID);
@@ -136,7 +156,6 @@ ROIManager::ROIManager(Module &M) {
     this->funcToRoisMap[&F] = this->computeROIs(F);
   }
 
-  this->roisLoadsStores = this->computeROIsLoadsStores();
 }
 
 std::unordered_set<Instruction*> ROIManager::computeROIsLoadsStores(void){
@@ -168,5 +187,6 @@ std::unordered_set<Instruction*> ROIManager::computeROIsLoadsStores(void){
 }
 
 std::unordered_set<Instruction*> ROIManager::getROIsLoadsStores(void){
+  this->roisLoadsStores = this->computeROIsLoadsStores();
   return this->roisLoadsStores;
 }
