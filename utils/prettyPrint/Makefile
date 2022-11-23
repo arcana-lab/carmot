@@ -36,6 +36,6 @@ help:
 	clang++ -O3 -g $(INCLUDE) $@.cpp -c -o $@.o $(LIBS)
 
 clean:
-	rm -f get-referencecycles get-criticalsection get-accelerator get-stateprivatization prettyPrint
+	rm -f get-parallelfor get-referencecycles get-criticalsection get-accelerator get-stateprivatization prettyPrint
 
-.PHONY: clean get-referencecycles get-criticalsection get-accelerator get-stateprivatization prettyPrint
+.PHONY: clean get-parallelfor get-referencecycles get-criticalsection get-accelerator get-stateprivatization prettyPrint
