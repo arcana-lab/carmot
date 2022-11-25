@@ -1042,6 +1042,10 @@ AllocationToSave getAllocationToSave(Allocation *alloc, stateInfoSetType* offset
   uint64_t staticID = 0; 
   Trace *trace = getTraceAndStaticID(uniqueID, staticID);
 
+  if (alloc == nullptr){
+    return AllocationToSave{} ;
+  }
+
   AllocationToSave currAllocationToSave(trace, offsets, staticID, uniqueID, ((uint64_t) alloc->pointer), alloc->length, alloc->StateCommitInfoMap[state]->regionBasedOffsets);
 
   // Go through uses
